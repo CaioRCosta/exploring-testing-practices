@@ -56,7 +56,7 @@ Explorando a estrutura de pastas, percebi uma coisa que eu não esperava: existe
 
 Fui ver do que se tratava e entendi que o FastAPI testa os próprios exemplos da documentação. Os trechos de código que aparecem no site da documentação não são escritos direto no texto. Eles ficam em arquivos Python de verdade, na pasta docs_src/. E para cada exemplo existe um teste correspondente em tests/test_tutorial/, seguindo a mesma organização de pastas.
 
-O teste importa o arquivo do exemplo, cria um cliente de teste em cima da aplicação (sem precisar subir um servidor de verdade) e faz uma requisição, conferindo se o status e o JSON de resposta estão certos. A fixture é parametrizada, então o mesmo teste pode rodar em variações do exemplo, e o marcador needs_py310 pula o caso se a versão do Python não for compatível.
+OPor exemplo, os exemplos de docs_src/body/ são testados em tests/test_tutorial/test_body/. Cada teste importa o arquivo do exemplo, cria um cliente de teste em cima da aplicação (sem precisar subir um servidor de verdade) e faz requisições, conferindo se o status e o JSON de resposta estão certos. Quando há versões diferentes do mesmo exemplo, o teste roda em cada uma delas.
 
 Achei essa prática bem inteligente porque ela resolve um problema comum: documentação desatualizada. Em muitos projetos você copia um exemplo da documentação e ele não funciona mais, porque a biblioteca mudou e ninguém atualizou o texto. No FastAPI isso não acontece, porque se alguma mudança quebrar um exemplo, os testes falham no CI na hora. Além disso, esses testes acabam funcionando quase como testes de aceitação, já que usam o framework do mesmo jeito que um usuário usaria, e ajudam a pegar mudanças que quebrariam código de quem já usa a biblioteca.
 
