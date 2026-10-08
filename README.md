@@ -54,19 +54,7 @@ Nas dependências de teste, o projeto usa o pytest como framework principal, jun
 
 Explorando a estrutura de pastas, percebi uma coisa que eu não esperava: existe uma pasta chamada tests/test_tutorial/, e ela sozinha tem uns 330 arquivos de teste (cerca de 780 funções), o que dá mais ou menos um terço de todos os testes do projeto.
 
-Fui ver do que se tratava e entendi que o FastAPI testa os próprios exemplos da documentação. Os trechos de código que aparecem no site da documentação não são escritos direto no texto. Eles ficam em arquivos Python de verdade, na pasta docs_src/. E para cada exemplo existe um teste correspondente em tests/test_tutorial/, seguindo a mesma organização de pastas. Por exemplo, os exemplos de docs_src/body/ são testados em tests/test_tutorial/test_body/.
-Um desses testes (resumido) é assim:
-
-@pytest.fixture(name="client", params=[pytest.param("tutorial001_py310", marks=needs_py310)])
-def get_client(request: pytest.FixtureRequest):
-    mod = importlib.import_module(f"docs_src.body.{request.param}")
-    return TestClient(mod.app)
-
-def test_body_float(client: TestClient):
-    response = client.post("/items/", json={"name": "Foo", "price": 50.5})
-    assert response.status_code == 200
-    assert response.json() == {"name": "Foo", "price": 50.5, "description": None, "tax": None}
-    
+Fui ver do que se tratava e entendi que o FastAPI testa os próprios exemplos da documentação. Os trechos de código que aparecem no site da documentação não são escritos direto no texto. Eles ficam em arquivos Python de verdade, na pasta docs_src/. E para cada exemplo existe um teste correspondente em tests/test_tutorial/, seguindo a mesma organização de pastas.
 
 O teste importa o arquivo do exemplo, cria um cliente de teste em cima da aplicação (sem precisar subir um servidor de verdade) e faz uma requisição, conferindo se o status e o JSON de resposta estão certos. A fixture é parametrizada, então o mesmo teste pode rodar em variações do exemplo, e o marcador needs_py310 pula o caso se a versão do Python não for compatível.
 
