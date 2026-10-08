@@ -46,6 +46,30 @@ Escolha uma prática ou dado de teste relevante e explique com suas próprias pa
 
 Repositório: https://github.com/fastapi/fastapi
 
-URL TestMiner: `<URL_NO_TESTMINER>`
+URL TestMiner: https://andrehora.github.io/testminer/#fastapi/fastapi
 
-Explicação: `<SUA_EXPLICAÇÃO>`
+Explicação: Escolhi o FastAPI, um framework em Python para criar APIs web. Já tinha ouvido falar bastante dele e fiquei curioso para ver como um projeto tão usado organiza os testes. O que me chamou a atenção no TestMiner foi a quantidade de testes. O pacote principal (fastapi/) tem pouco mais de 50 arquivos Python, enquanto a pasta tests/ tem mais de 600, com cerca de 2.400 funções de teste no total. Dá mais ou menos 10 arquivos de teste para cada arquivo de código. Os testes ficam todos separados do código, na pasta tests/, e lá dentro ainda tem pastas próprias para benchmarks de desempenho e de memória.
+
+Nas dependências de teste, o projeto usa o pytest como framework principal, junto com alguns plugins (pytest-cov para cobertura, pytest-xdist para rodar em paralelo, pytest-timeout e pytest-codspeed para os benchmarks). Também usa o httpx, que é o que está por trás do TestClient do FastAPI, e bibliotecas como inline-snapshot e dirty-equals para facilitar as comparações nos asserts.
+
+A prática que escolhi: os exemplos da documentação também são testados
+
+Explorando a estrutura de pastas, percebi uma coisa que eu não esperava: existe uma pasta chamada tests/test_tutorial/, e ela sozinha tem uns 330 arquivos de teste (cerca de 780 funções), o que dá mais ou menos um terço de todos os testes do projeto.
+
+Fui ver do que se tratava e entendi que o FastAPI testa os próprios exemplos da documentação. Os trechos de código que aparecem no site da documentação não são escritos direto no texto. Eles ficam em arquivos Python de verdade, na pasta docs_src/. E para cada exemplo existe um teste correspondente em tests/test_tutorial/, seguindo a mesma organização de pastas. Por exemplo, os exemplos de docs_src/body/ são testados em tests/test_tutorial/test_body/.
+Um desses testes (resumido) é assim:
+@pytest.fixture(name="client", params=[pytest.param("tutorial001_py310", marks=needs_py310)])
+def get_client(request: pytest.FixtureRequest):
+    mod = importlib.import_module(f"docs_src.body.{request.param}")
+    return TestClient(mod.app)
+
+def test_body_float(client: TestClient):
+    response = client.post("/items/", json={"name": "Foo", "price": 50.5})
+    assert response.status_code == 200
+    assert response.json() == {"name": "Foo", "price": 50.5, "description": None, "tax": None}
+
+O teste importa o arquivo do exemplo, cria um cliente de teste em cima da aplicação (sem precisar subir um servidor de verdade) e faz uma requisição, conferindo se o status e o JSON de resposta estão certos. A fixture é parametrizada, então o mesmo teste pode rodar em variações do exemplo, e o marcador needs_py310 pula o caso se a versão do Python não for compatível.
+
+Achei essa prática bem inteligente porque ela resolve um problema comum: documentação desatualizada. Em muitos projetos você copia um exemplo da documentação e ele não funciona mais, porque a biblioteca mudou e ninguém atualizou o texto. No FastAPI isso não acontece, porque se alguma mudança quebrar um exemplo, os testes falham no CI na hora. Além disso, esses testes acabam funcionando quase como testes de aceitação, já que usam o framework do mesmo jeito que um usuário usaria, e ajudam a pegar mudanças que quebrariam código de quem já usa a biblioteca.
+
+O lado ruim é que isso dá trabalho: todo exemplo novo na documentação precisa de um teste junto, e a suíte de testes fica bem grande. Imagino que seja por isso que eles usam o pytest-xdist para rodar os testes em paralelo. Mesmo assim, acho que vale a pena, e isso explica boa parte da quantidade tão grande de testes que o TestMiner mostra para esse repositório.
