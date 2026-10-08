@@ -52,8 +52,6 @@ Explicação: Escolhi o FastAPI, um framework em Python para criar APIs web. Já
 
 Nas dependências de teste, o projeto usa o pytest como framework principal, junto com alguns plugins (pytest-cov para cobertura, pytest-xdist para rodar em paralelo, pytest-timeout e pytest-codspeed para os benchmarks). Também usa o httpx, que é o que está por trás do TestClient do FastAPI, e bibliotecas como inline-snapshot e dirty-equals para facilitar as comparações nos asserts.
 
-A prática que escolhi: os exemplos da documentação também são testados
-
 Explorando a estrutura de pastas, percebi uma coisa que eu não esperava: existe uma pasta chamada tests/test_tutorial/, e ela sozinha tem uns 330 arquivos de teste (cerca de 780 funções), o que dá mais ou menos um terço de todos os testes do projeto.
 
 Fui ver do que se tratava e entendi que o FastAPI testa os próprios exemplos da documentação. Os trechos de código que aparecem no site da documentação não são escritos direto no texto. Eles ficam em arquivos Python de verdade, na pasta docs_src/. E para cada exemplo existe um teste correspondente em tests/test_tutorial/, seguindo a mesma organização de pastas. Por exemplo, os exemplos de docs_src/body/ são testados em tests/test_tutorial/test_body/.
